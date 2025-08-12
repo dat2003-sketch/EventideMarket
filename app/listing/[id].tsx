@@ -56,17 +56,21 @@
 //   );
 // }
 
-import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, Image, Alert, ScrollView } from 'react-native';
+
+
+
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useListing } from '../../hooks/useListings';
-import { formatPrice, formatCondition } from '../../utils/formatting';
+import React from 'react';
+import { Alert, Image, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import BackButton from '../../components/common/BackButton';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFavorites } from '../../hooks/useFavorites';
+import { useListing } from '../../hooks/useListings';
 import { listingsService } from '../../services/listings';
 import { globalStyles } from '../../styles/globalStyles';
+import { formatCondition, formatPrice } from '../../utils/formatting';
 
 export default function ListingDetail() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
@@ -119,8 +123,18 @@ export default function ListingDetail() {
     ]);
   };
 
+
   return (
+
+    
     <SafeAreaView style={globalStyles.safeContainer}>
+
+      <View style={{  position: 'absolute' }}>
+      <BackButton /> 
+      <ScrollView contentContainerStyle={{ padding: 0, gap: 0 }}>
+      </ScrollView>
+    </View>
+
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
         {!!listing.image_url && (
           <Image
