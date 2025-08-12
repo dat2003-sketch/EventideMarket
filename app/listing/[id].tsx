@@ -59,8 +59,8 @@
 
 
 
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import { Alert, Image, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BackButton from '../../components/common/BackButton';
@@ -72,6 +72,8 @@ import { listingsService } from '../../services/listings';
 import { globalStyles } from '../../styles/globalStyles';
 import { formatCondition, formatPrice } from '../../utils/formatting';
 
+import { profilesService } from '@/services/profiles';
+
 export default function ListingDetail() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -79,6 +81,22 @@ export default function ListingDetail() {
   const { user } = useAuth();
   const { isFavorite, addFavorite, removeFavorite } = useFavorites();
   const router = useRouter();
+  const [sellerName, setSellerName] = useState<string>('');
+
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!listing?.user_id) return;
+      try {
+        const p = await profilesService.getPublicProfile(listing.user_id);
+        if (alive) setSellerName(p?.display_name || p?.email || 'Seller');
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => { alive = false; };
+  }, [listing?.user_id]);
 
   if (!id) {
     return (
@@ -147,6 +165,14 @@ export default function ListingDetail() {
         <Text style={globalStyles.subtitle}>
           {formatPrice(listing.price)} · {formatCondition(listing.condition)}
         </Text>
+
+        {/* 👇 Seller (có link tới trang hồ sơ) */}
+          <Link href={`/user/${listing.user_id}`} asChild>
+            <Text style={[globalStyles.caption, { textDecorationLine: 'underline' }]}>
+              by {sellerName || '—'}
+            </Text>
+          </Link>
+
         <Text style={globalStyles.body}>{listing.description}</Text>
 
         {/* Actions */}
