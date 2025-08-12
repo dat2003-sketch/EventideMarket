@@ -115,8 +115,8 @@
 
 
 // contexts/AuthContext.tsx
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../services/supabase';
 
 export interface Profile {
