@@ -1,11 +1,10 @@
-import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, ScrollView } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { profilesService } from '../../services/profiles';
-import { useEffect, useState } from 'react';
-import { useUserListings } from '../../hooks/useListings';
+import React, { useEffect, useState } from 'react';
+import { Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import ListingGrid from '../../components/listings/ListingGrid';
+import { useUserListings } from '../../hooks/useListings';
+import { profilesService } from '../../services/profiles';
 import { globalStyles } from '../../styles/globalStyles';
 
 export default function PublicProfile() {
@@ -17,7 +16,7 @@ export default function PublicProfile() {
 
   return (
     <SafeAreaView style={globalStyles.safeContainer}>
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+      <View style={{ padding: 16, gap: 12 }}>
         {profile && (
           <View>
             <Text style={globalStyles.title}>{profile.display_name}</Text>
@@ -25,7 +24,7 @@ export default function PublicProfile() {
           </View>
         )}
         <ListingGrid items={listings} loading={loading} />
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
