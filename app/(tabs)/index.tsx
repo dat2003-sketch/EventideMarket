@@ -1,112 +1,115 @@
-
-// import React from 'react';
-// import { ScrollView, StyleSheet, Text, View } from 'react-native';
+// import React, { useMemo, useState } from 'react';
 // import { SafeAreaView } from 'react-native-safe-area-context';
 // import ListingGrid from '../../components/listings/ListingGrid';
-// import Header from '../../components/market/Header';
+// import MarketHeader from '../../components/market/MarketHeader';
 // import { useListings } from '../../hooks/useListings';
+// import type { Category, ConditionValue } from '../../utils/constants';
 
 // export default function Market() {
 //   const { listings, loading, refreshing, onRefresh, loadMore, loadingMore } =
 //     useListings({ pageSize: 12 });
 
+//   // ✅ state gắn đúng type
+//   const [query, setQuery] = useState('');
+//   const [category, setCategory] = useState<Category | null>(null);
+//   const [condition, setCondition] = useState<ConditionValue | null>(null);
+
+//   const filtered = useMemo(() => {
+//     const q = query.trim().toLowerCase();
+//     return (listings || []).filter((it: any) => {
+//       if (category && it.category !== category) return false;
+//       if (condition && String(it.condition) !== condition) return false;
+//       if (!q) return true;
+//       return (
+//         String(it.title ?? '').toLowerCase().includes(q) ||
+//         String(it.description ?? '').toLowerCase().includes(q)
+//       );
+//     });
+//   }, [listings, query, category, condition]);
+
+//   const header = (
+//     <MarketHeader
+//       query={query}
+//       onChangeQuery={setQuery}
+//       category={category}
+//       onSelectCategory={setCategory}
+//       condition={condition}
+//       onSelectCondition={setCondition}
+//       onClearAll={() => {
+//         setQuery('');
+//         setCategory(null);
+//         setCondition(null);
+//       }}
+//     />
+//   );
+
 //   return (
 //     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-//       <Header />
-
-//       <ScrollView
-//         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
-//         refreshControl={undefined}
-//       >
-//         {/* Hero */}
-//         <View style={styles.hero}>
-//           <Text style={styles.heroTitle}>Discover Artisan Goods</Text>
-//           <Text style={styles.heroSubtitle}>
-//             A curated collection of handmade items from talented creators around the world.
-//           </Text>
-//         </View>
-
-//         {/* Grid feed */}
-//         <View style={{ marginTop: 8 }}>
-//           <ListingGrid
-//             items={listings}
-//             loading={loading}
-//             // nếu bạn đang dùng pull-to-refresh riêng thì truyền vào 3 prop dưới:
-//             refreshing={refreshing}
-//             onRefresh={onRefresh}
-//             // infinite scroll
-//             onDelete={undefined}
-//           />
-//           {/* Nếu ListingGrid của bạn hỗ trợ onEndReached/ loadingMore thì vẫn chạy bình thường */}
-//         </View>
-//       </ScrollView>
+//       <ListingGrid
+//         items={filtered}
+//         loading={loading}
+//         refreshing={refreshing}
+//         onRefresh={onRefresh}
+//         onEndReached={loadMore}
+//         loadingMore={loadingMore}
+//         ListHeaderComponent={header}
+//       />
 //     </SafeAreaView>
 //   );
 // }
 
-// const styles = StyleSheet.create({
-//   hero: { paddingVertical: 20, alignItems: 'center' },
-//   heroTitle: {
-//     fontSize: 28,
-//     fontWeight: '800',
-//     color: '#0f172a',
-//     textAlign: 'center',
-//     letterSpacing: 0.2,
-//   },
-//   heroSubtitle: {
-//     marginTop: 8,
-//     fontSize: 14,
-//     lineHeight: 20,
-//     color: '#475569',
-//     textAlign: 'center',
-//     maxWidth: 560,
-//   },
-// });
-
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, StyleSheet } from 'react-native';
 import { useListings } from '../../hooks/useListings';
 import ListingGrid from '../../components/listings/ListingGrid';
-import Header from '../../components/market/Header';
+import HomeHeaderSimple from '../../components/market/HomeHeaderSimple';
+import type { ConditionValue } from '../../utils/constants';
 
 export default function Market() {
   const { listings, loading, refreshing, onRefresh, loadMore, loadingMore } =
     useListings({ pageSize: 12 });
 
-  const hero = (
-    <View style={styles.hero}>
-      <Text style={styles.heroTitle}>Discover Artisan Goods</Text>
-      <Text style={styles.heroSubtitle}>
-        A curated collection of handmade items from talented creators around the world.
-      </Text>
-    </View>
+  const [query, setQuery] = useState('');
+  const [condition, setCondition] = useState<ConditionValue | null>(null);
+  const [sort, setSort] = useState<'asc' | 'desc' | null>(null);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    let arr = (listings || []).filter((it: any) => {
+      if (condition && String(it.condition) !== condition) return false;
+      if (!q) return true;
+      return (
+        String(it.title ?? '').toLowerCase().includes(q) ||
+        String(it.description ?? '').toLowerCase().includes(q)
+      );
+    });
+    if (sort === 'asc') arr = [...arr].sort((a: any, b: any) => Number(a.price) - Number(b.price));
+    if (sort === 'desc') arr = [...arr].sort((a: any, b: any) => Number(b.price) - Number(a.price));
+    return arr;
+  }, [listings, query, condition, sort]);
+
+  const header = (
+    <HomeHeaderSimple
+      query={query}
+      onChangeQuery={setQuery}
+      condition={condition}
+      onSelectCondition={setCondition}
+      sort={sort}
+      onToggleSort={() => setSort((s) => (s === 'asc' ? 'desc' : s === 'desc' ? null : 'asc'))}
+    />
   );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-      <Header />
       <ListingGrid
-        items={listings}
+        items={filtered}
         loading={loading}
         refreshing={refreshing}
         onRefresh={onRefresh}
         onEndReached={loadMore}
         loadingMore={loadingMore}
-        ListHeaderComponent={hero}   // ✅ hero sẽ cuộn cùng list
+        ListHeaderComponent={header}
       />
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  hero: { paddingTop: 12, paddingBottom: 8, alignItems: 'center' },
-  heroTitle: {
-    fontSize: 28, fontWeight: '800', color: '#0f172a',
-    textAlign: 'center', letterSpacing: 0.2, paddingHorizontal: 16,
-  },
-  heroSubtitle: {
-    marginTop: 8, fontSize: 14, lineHeight: 20, color: '#475569',
-    textAlign: 'center', maxWidth: 560, paddingHorizontal: 16,
-  },
-});

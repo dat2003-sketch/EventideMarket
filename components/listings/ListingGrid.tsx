@@ -1,9 +1,8 @@
 
-
-// import React from 'react';
-// import { View, ActivityIndicator, FlatList, Text } from 'react-native';
-// import ListingCard from './ListingCard';
 // import { useRouter } from 'expo-router';
+// import React from 'react';
+// import { ActivityIndicator, FlatList } from 'react-native';
+// import ListingCard from './ListingCard';
 
 // interface Props {
 //   items: any[];
@@ -11,8 +10,6 @@
 //   editable?: boolean;
 //   ownerId?: string;
 //   onDelete?: (id: string) => void;
-
-//   // ✅ thêm các props cho pull-to-refresh & infinite scroll & header
 //   refreshing?: boolean;
 //   onRefresh?: () => void;
 //   onEndReached?: () => void;
@@ -33,21 +30,7 @@
 // }: Props) {
 //   const router = useRouter();
 
-//   if (loading && (!items || items.length === 0)) {
-//     return (
-//       <View style={{ paddingVertical: 24 }}>
-//         <ActivityIndicator />
-//       </View>
-//     );
-//   }
-
-//   if (!loading && (!items || items.length === 0)) {
-//     return (
-//       <View style={{ alignItems: 'center', paddingVertical: 24 }}>
-//         <Text>No items</Text>
-//       </View>
-//     );
-//   }
+//   if (loading && (!items || items.length === 0)) return <ActivityIndicator style={{ padding: 24 }} />;
 
 //   return (
 //     <FlatList
@@ -63,9 +46,8 @@
 //         />
 //       )}
 //       numColumns={2}
-//       columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 12 }}
+//       columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 14 }}
 //       contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}
-//       // ✅ header/refresh/load-more
 //       ListHeaderComponent={ListHeaderComponent ?? null}
 //       refreshing={refreshing}
 //       onRefresh={onRefresh}
@@ -78,38 +60,29 @@
 //   );
 // }
 
-import { useRouter } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, FlatList } from 'react-native';
 import ListingCard from './ListingCard';
+import { useRouter } from 'expo-router';
 
 interface Props {
   items: any[];
   loading?: boolean;
   editable?: boolean;
-  ownerId?: string;
   onDelete?: (id: string) => void;
+  ListHeaderComponent?: React.ReactElement | null;
   refreshing?: boolean;
   onRefresh?: () => void;
   onEndReached?: () => void;
   loadingMore?: boolean;
-  ListHeaderComponent?: React.ReactElement | null;
 }
 
 export default function ListingGrid({
-  items,
-  loading,
-  editable,
-  onDelete,
-  refreshing,
-  onRefresh,
-  onEndReached,
-  loadingMore,
-  ListHeaderComponent,
+  items, loading, editable, onDelete,
+  ListHeaderComponent, refreshing, onRefresh, onEndReached,
 }: Props) {
   const router = useRouter();
-
-  if (loading && (!items || items.length === 0)) return <ActivityIndicator style={{ padding: 24 }} />;
+  if (loading) return <ActivityIndicator />;
 
   return (
     <FlatList
@@ -124,17 +97,14 @@ export default function ListingGrid({
           onDelete={() => onDelete?.(item.id)}
         />
       )}
-      numColumns={2}
-      columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 14 }}
-      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}
       ListHeaderComponent={ListHeaderComponent ?? null}
+      numColumns={2}
+      columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: 16, marginBottom: 12 }}
+      contentContainerStyle={{ paddingBottom: 40 }}
       refreshing={refreshing}
       onRefresh={onRefresh}
+      onEndReachedThreshold={0.2}
       onEndReached={onEndReached}
-      onEndReachedThreshold={0.4}
-      ListFooterComponent={
-        loadingMore ? <ActivityIndicator style={{ paddingVertical: 12 }} /> : null
-      }
     />
   );
 }
