@@ -141,16 +141,18 @@ export default function ListingDetail() {
 
   return (
     <SafeAreaView style={globalStyles.safeContainer}>
-      <View style={{ position: 'absolute' }}>
-        <BackButton />
-        <ScrollView contentContainerStyle={{ padding: 0, gap: 0 }} />
+
+      <View style={{  position: 'absolute' }}>
+        <BackButton /> 
+        <ScrollView contentContainerStyle={{ padding: 0, gap: 0 }}>
+        </ScrollView>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 50, gap: 12 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
         {!!listing.image_url && (
           <Image
             source={{ uri: listing.image_url }}
-            style={{ width: '100%', height: 500, borderRadius: 12 }}
+            style={{ width: '100%', height: 260, borderRadius: 12 }}
           />
         )}
 
