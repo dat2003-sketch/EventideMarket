@@ -160,11 +160,33 @@ export default function ListingDetail() {
             style={{ width: '100%', height: 500, borderRadius: 12 }}
           />
         )}
+  
+      <Text style={globalStyles.title}>{listing.title}</Text>
 
-        <Text style={globalStyles.title}>{listing.title}</Text>
-        <Text style={globalStyles.subtitle}>
-          {formatPrice(listing.price)} · {formatCondition(listing.condition)}
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
+          <Text
+            style={[globalStyles.subtitle, { fontSize: 26, color: '#16a34a', fontWeight: '700' }]} // xanh lá cho giá
+          >
+            {formatPrice(listing.price)}
+          </Text>
+          
+          {/* <Text
+            style={globalStyles.subtitle} // xám cho condition
+          >
+            ·
+          </Text> */}
+          
+          <Text
+            style={[globalStyles.subtitle, { 
+              color: '#ef4444', 
+              fontWeight: 'bold', 
+              fontStyle: 'italic', 
+              textDecorationLine: 'underline',  
+            }]} // xám cho condition
+          >
+             {formatCondition(listing.condition)}
+          </Text>
+        </View>
 
         {/* 👇 Seller (có link tới trang hồ sơ) */}
           <Link href={`/user/${listing.user_id}`} asChild>

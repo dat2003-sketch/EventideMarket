@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { COLORS, SPACING, BORDER_RADIUS } from '../utils/constants';
+import { BORDER_RADIUS, COLORS } from '../utils/constants';
 
 export const globalStyles = StyleSheet.create({
   safeContainer: { flex: 1, backgroundColor: COLORS.background.app },
