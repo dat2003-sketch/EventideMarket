@@ -59,6 +59,7 @@
 
 
 
+import { profilesService } from '@/services/profiles';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Image, ScrollView, Text, View } from 'react-native';
@@ -72,8 +73,6 @@ import { listingsService } from '../../services/listings';
 import { globalStyles } from '../../styles/globalStyles';
 import { formatCondition, formatPrice } from '../../utils/formatting';
 
-import { profilesService } from '@/services/profiles';
-
 export default function ListingDetail() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -82,7 +81,6 @@ export default function ListingDetail() {
   const { isFavorite, addFavorite, removeFavorite } = useFavorites();
   const router = useRouter();
   const [sellerName, setSellerName] = useState<string>('');
-
 
   useEffect(() => {
     let alive = true;
@@ -141,16 +139,11 @@ export default function ListingDetail() {
     ]);
   };
 
-
   return (
-
-    
     <SafeAreaView style={globalStyles.safeContainer}>
-
-      <View style={{  position: 'absolute' }}>
-        <BackButton /> 
-        <ScrollView contentContainerStyle={{ padding: 0, gap: 0 }}>
-        </ScrollView>
+      <View style={{ position: 'absolute' }}>
+        <BackButton />
+        <ScrollView contentContainerStyle={{ padding: 0, gap: 0 }} />
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 50, gap: 12 }}>
@@ -162,22 +155,46 @@ export default function ListingDetail() {
         )}
 
         <Text style={globalStyles.title}>{listing.title}</Text>
-        <Text style={globalStyles.subtitle}>
-          {formatPrice(listing.price)} · {formatCondition(listing.condition)}
-        </Text>
 
-        {/* 👇 Seller (có link tới trang hồ sơ) */}
-          <Link href={`/user/${listing.user_id}`} asChild>
-            <Text style={[globalStyles.caption, { textDecorationLine: 'underline' }]}>
-              by {sellerName || '—'}
-            </Text>
-          </Link>
+        {/* Giá & condition khác màu */}
+        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
+          <Text
+            style={[globalStyles.subtitle, { fontSize: 26, color: '#16a34a', fontWeight: '700' }]} // xanh lá cho giá
+          >
+            {formatPrice(listing.price)}
+          </Text>
+          
+          {/* <Text
+            style={globalStyles.subtitle} // xám cho condition
+          >
+            ·
+          </Text> */}
+          
+          <Text
+            style={[globalStyles.subtitle, { 
+              color: '#ef4444', 
+              fontWeight: 'bold', 
+              fontStyle: 'italic', 
+              textDecorationLine: 'underline', 
+              borderBottomWidth: 2,
+              borderBottomColor: '#ef4444' 
+            }]} // xám cho condition
+          >
+             {formatCondition(listing.condition)}
+          </Text>
+        </View>
+
+        {/* Seller (có link tới trang hồ sơ) */}
+        <Link href={`/user/${listing.user_id}`} asChild>
+          <Text style={[globalStyles.caption, { textDecorationLine: 'underline' }]}>
+            by {sellerName || '—'}
+          </Text>
+        </Link>
 
         <Text style={globalStyles.body}>{listing.description}</Text>
 
         {/* Actions */}
         <View style={{ gap: 12 }}>
-          {/* Favorite full-width để không bị tràn */}
           <Button
             title={fav ? 'Unfavorite' : 'Favorite'}
             onPress={toggleFav}
