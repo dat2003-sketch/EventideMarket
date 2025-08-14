@@ -1,10 +1,11 @@
+import { Link } from 'expo-router';
 import React, { useState } from 'react';
-import { View, Alert } from 'react-native';
+import { Alert, View } from 'react-native';
 import AuthScreen from '../../components/auth/AuthScreen';
 import AuthTextField from '../../components/auth/AuthTextField';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../contexts/AuthContext';
-import { validateSignIn, getFieldError } from '../../utils/validation';
+import { getFieldError, validateSignIn } from '../../utils/validation';
 
 export default function Login() {
   const { signIn } = useAuth();
@@ -47,7 +48,9 @@ export default function Login() {
         error={getFieldError(errors, 'password')}
       />
       <Button title={submitting ? 'Signing in...' : 'Sign In'} onPress={onSubmit} loading={submitting} />
-      <View style={{ alignItems: 'center' }}>{/* link register giữ nguyên nếu bạn có */}</View>
+      <View style={{ alignItems: 'center' }}>
+         <Link href='/(auth)/register'>No account? Register</Link>   {/* ✅ thêm link Register */}
+      </View>
     </AuthScreen>
   );
 }
