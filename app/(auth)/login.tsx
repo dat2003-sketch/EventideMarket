@@ -49,7 +49,7 @@ export default function Login() {
       />
       <Button title={submitting ? 'Signing in...' : 'Sign In'} onPress={onSubmit} loading={submitting} />
       <View style={{ alignItems: 'center' }}>
-         <Link href='/(auth)/register'>No account? Register</Link>   {/* ✅ thêm link Register */}
+         <Link href='/(auth)/register'>No account? Register</Link>   
       </View>
     </AuthScreen>
   );
