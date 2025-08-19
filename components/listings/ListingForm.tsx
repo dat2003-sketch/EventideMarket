@@ -1,3 +1,4 @@
+
 // import React, { useMemo, useState } from 'react';
 // import {
 //   View,
@@ -6,11 +7,17 @@
 //   Image,
 //   TouchableOpacity,
 //   ActivityIndicator,
+//   ScrollView,
 // } from 'react-native';
 // import { Button } from '../common/Button';
+// import Chip from '../common/Chip';
 // import { useImagePicker } from '../../hooks/useImagePicker';
 // import { validateListing, getFieldError } from '../../utils/validation';
-// import { CATEGORIES, CONDITIONS } from '../../utils/constants';
+// import {
+//   CATEGORIES,
+//   CONDITIONS,
+//   type ConditionValue,
+// } from '../../utils/constants';
 // import { globalStyles } from '../../styles/globalStyles';
 
 // interface Props {
@@ -19,15 +26,17 @@
 // }
 
 // export default function ListingForm({ initialValues, onSubmit }: Props) {
+//   const isCreate = !initialValues;
+
 //   const [title, setTitle] = useState(initialValues?.title ?? '');
 //   const [description, setDescription] = useState(initialValues?.description ?? '');
 //   const [price, setPrice] = useState(String(initialValues?.price ?? ''));
-//   const [category, setCategory] = useState(
-//     initialValues?.category ?? CATEGORIES[0]
+//   const [category, setCategory] = useState(initialValues?.category ?? CATEGORIES[0]);
+
+//   const [condition, setCondition] = useState<ConditionValue>(
+//     (initialValues?.condition as ConditionValue) ?? CONDITIONS[0].value
 //   );
-//   const [condition, setCondition] = useState(
-//     initialValues?.condition ?? CONDITIONS[0].value
-//   );
+
 //   const [imageUrl, setImageUrl] = useState<string | undefined>(
 //     initialValues?.image_url ?? undefined
 //   );
@@ -49,7 +58,11 @@
 
 //   const selectImage = async () => {
 //     const url = await pickAndUploadImage();
-//     if (url) setImageUrl(url);
+//     if (url) {
+//       setImageUrl(url);
+//       // xóa lỗi "image" (nếu có) sau khi người dùng đã chọn ảnh
+//       setErrors((prev) => prev.filter((e) => e.field !== 'image'));
+//     }
 //   };
 
 //   const submit = async () => {
@@ -60,8 +73,16 @@
 //       category,
 //       condition,
 //     });
-//     setErrors(result.errors);
-//     if (!result.isValid) return;
+
+//     // Bắt buộc ảnh khi TẠO MỚI
+//     const nextErrors = [...result.errors];
+//     if (isCreate && !imageUrl) {
+//       nextErrors.push({ field: 'image', message: 'Image is required' });
+//     }
+
+//     setErrors(nextErrors);
+//     if (nextErrors.length > 0) return;
+
 //     try {
 //       setSubmitting(true);
 //       await onSubmit(payload);
@@ -70,14 +91,14 @@
 //     }
 //   };
 
+//   const imageError = getFieldError(errors, 'image');
+
 //   return (
 //     <View style={{ gap: 12 }}>
 //       <Text style={globalStyles.label}>Title</Text>
 //       <TextInput style={globalStyles.input} value={title} onChangeText={setTitle} />
 //       {!!getFieldError(errors, 'title') && (
-//         <Text style={globalStyles.errorText}>
-//           {getFieldError(errors, 'title')}
-//         </Text>
+//         <Text style={globalStyles.errorText}>{getFieldError(errors, 'title')}</Text>
 //       )}
 
 //       <Text style={globalStyles.label}>Description</Text>
@@ -101,17 +122,38 @@
 //         keyboardType="numeric"
 //       />
 //       {!!getFieldError(errors, 'price') && (
-//         <Text style={globalStyles.errorText}>
-//           {getFieldError(errors, 'price')}
-//         </Text>
+//         <Text style={globalStyles.errorText}>{getFieldError(errors, 'price')}</Text>
 //       )}
 
 //       <Text style={globalStyles.label}>Category</Text>
-//       <TextInput style={globalStyles.input} value={category} onChangeText={setCategory} />
+//       <TextInput
+//         style={globalStyles.input}
+//         value={category}
+//         onChangeText={setCategory}
+//       />
 
 //       <Text style={globalStyles.label}>Condition</Text>
-//       <TextInput style={globalStyles.input} value={condition} onChangeText={setCondition} />
+//       <ScrollView
+//         horizontal
+//         showsHorizontalScrollIndicator={false}
+//         contentContainerStyle={{ paddingVertical: 2 }}
+//       >
+//         {CONDITIONS.map((c) => (
+//           <Chip
+//             key={c.value}
+//             label={c.label}
+//             selected={condition === c.value}
+//             onPress={() => setCondition(c.value as ConditionValue)}
+//           />
+//         ))}
+//       </ScrollView>
+//       {!!getFieldError(errors, 'condition') && (
+//         <Text style={globalStyles.errorText}>{getFieldError(errors, 'condition')}</Text>
+//       )}
 
+//       <Text style={globalStyles.label}>
+//         Image{isCreate ? ' *' : ''}
+//       </Text>
 //       <TouchableOpacity
 //         onPress={selectImage}
 //         style={[globalStyles.buttonSecondary, { alignSelf: 'flex-start' }]}
@@ -124,6 +166,7 @@
 //           </Text>
 //         )}
 //       </TouchableOpacity>
+//       {!!imageError && <Text style={globalStyles.errorText}>{imageError}</Text>}
 
 //       {!!imageUrl && (
 //         <Image
@@ -142,12 +185,12 @@
 //         }
 //         onPress={submit}
 //         loading={submitting}
+//         // Chặn tạo mới nếu chưa có ảnh; Edit thì không chặn
+//         disabled={submitting || uploading || (isCreate && !imageUrl)}
 //       />
 //     </View>
 //   );
 // }
-
-// components/listings/ListingForm.tsx
 import React, { useMemo, useState } from 'react';
 import {
   View,
@@ -175,6 +218,8 @@ interface Props {
 }
 
 export default function ListingForm({ initialValues, onSubmit }: Props) {
+  const isCreate = !initialValues;
+
   const [title, setTitle] = useState(initialValues?.title ?? '');
   const [description, setDescription] = useState(initialValues?.description ?? '');
   const [price, setPrice] = useState(String(initialValues?.price ?? ''));
@@ -188,9 +233,7 @@ export default function ListingForm({ initialValues, onSubmit }: Props) {
     initialValues?.image_url ?? undefined
   );
   const [submitting, setSubmitting] = useState(false);
-  const [errors, setErrors] = useState(
-    [] as { field: string; message: string }[]
-  );
+  const [errors, setErrors] = useState([] as { field: string; message: string }[]);
   const { pickAndUploadImage, uploading } = useImagePicker();
 
   const payload = useMemo(
@@ -205,21 +248,50 @@ export default function ListingForm({ initialValues, onSubmit }: Props) {
     [title, description, price, category, condition, imageUrl]
   );
 
+  // ✅ Tính trước validation cho các field text/number
+  const baseValidation = useMemo(
+    () => validateListing({
+      title,
+      description,
+      price: Number(price),
+      category,
+      condition,
+    }),
+    [title, description, price, category, condition]
+  );
+
+  // ✅ Khóa nút nếu form chưa hợp lệ; khi tạo mới thì bắt buộc có ảnh
+  const canSubmit =
+    baseValidation.isValid &&
+    (!isCreate || !!imageUrl) &&
+    !uploading &&
+    !submitting;
+
   const selectImage = async () => {
     const url = await pickAndUploadImage();
-    if (url) setImageUrl(url);
+    if (url) {
+      setImageUrl(url);
+      // clear lỗi ảnh nếu có
+      setErrors(prev => prev.filter(e => e.field !== 'image'));
+    }
   };
 
   const submit = async () => {
-    const result = validateListing({
+    const v = validateListing({
       title,
       description,
       price: Number(price),
       category,
       condition,
     });
-    setErrors(result.errors);
-    if (!result.isValid) return;
+
+    const nextErrors = [...v.errors];
+    if (isCreate && !imageUrl) {
+      nextErrors.push({ field: 'image', message: 'Image is required' });
+    }
+
+    setErrors(nextErrors);
+    if (nextErrors.length > 0) return;
 
     try {
       setSubmitting(true);
@@ -231,12 +303,14 @@ export default function ListingForm({ initialValues, onSubmit }: Props) {
 
   return (
     <View style={{ gap: 12 }}>
+      {/* Title */}
       <Text style={globalStyles.label}>Title</Text>
       <TextInput style={globalStyles.input} value={title} onChangeText={setTitle} />
       {!!getFieldError(errors, 'title') && (
         <Text style={globalStyles.errorText}>{getFieldError(errors, 'title')}</Text>
       )}
 
+      {/* Description */}
       <Text style={globalStyles.label}>Description</Text>
       <TextInput
         style={globalStyles.textArea}
@@ -250,6 +324,7 @@ export default function ListingForm({ initialValues, onSubmit }: Props) {
         </Text>
       )}
 
+      {/* Price */}
       <Text style={globalStyles.label}>Price</Text>
       <TextInput
         style={globalStyles.input}
@@ -261,13 +336,18 @@ export default function ListingForm({ initialValues, onSubmit }: Props) {
         <Text style={globalStyles.errorText}>{getFieldError(errors, 'price')}</Text>
       )}
 
+      {/* Category */}
       <Text style={globalStyles.label}>Category</Text>
       <TextInput
         style={globalStyles.input}
         value={category}
         onChangeText={setCategory}
       />
+      {!!getFieldError(errors, 'category') && (
+        <Text style={globalStyles.errorText}>{getFieldError(errors, 'category')}</Text>
+      )}
 
+      {/* Condition */}
       <Text style={globalStyles.label}>Condition</Text>
       <ScrollView
         horizontal
@@ -287,6 +367,10 @@ export default function ListingForm({ initialValues, onSubmit }: Props) {
         <Text style={globalStyles.errorText}>{getFieldError(errors, 'condition')}</Text>
       )}
 
+      {/* Image */}
+      <Text style={globalStyles.label}>
+        Image{isCreate ? ' *' : ''}
+      </Text>
       <TouchableOpacity
         onPress={selectImage}
         style={[globalStyles.buttonSecondary, { alignSelf: 'flex-start' }]}
@@ -299,7 +383,9 @@ export default function ListingForm({ initialValues, onSubmit }: Props) {
           </Text>
         )}
       </TouchableOpacity>
-
+      {!!getFieldError(errors, 'image') && (
+        <Text style={globalStyles.errorText}>{getFieldError(errors, 'image')}</Text>
+      )}
       {!!imageUrl && (
         <Image
           source={{ uri: imageUrl }}
@@ -307,10 +393,12 @@ export default function ListingForm({ initialValues, onSubmit }: Props) {
         />
       )}
 
+      {/* Submit */}
       <Button
         title={submitting ? 'Submitting...' : initialValues ? 'Save Changes' : 'Create Listing'}
         onPress={submit}
         loading={submitting}
+        disabled={!canSubmit}
       />
     </View>
   );

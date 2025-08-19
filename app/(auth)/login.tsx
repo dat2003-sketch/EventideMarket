@@ -22,7 +22,7 @@ export default function Login() {
     try {
       setSubmitting(true);
       await signIn(email.trim().toLowerCase(), password);
-      // ❌ KHÔNG router.replace ở đây
+      //  KHÔNG router.replace ở đây
       // Gate trong app/_layout.tsx sẽ tự điều hướng sang '/(tabs)'
     } catch (e: any) {
       Alert.alert('Login failed', e?.message || 'Please try again.');
@@ -49,7 +49,7 @@ export default function Login() {
       />
       <Button title={submitting ? 'Signing in...' : 'Sign In'} onPress={onSubmit} loading={submitting} />
       <View style={{ alignItems: 'center' }}>
-         <Link href='/(auth)/register'>No account? Register</Link>   {/* ✅ thêm link Register */}
+         <Link href='/(auth)/register'>No account? Register</Link>   
       </View>
     </AuthScreen>
   );
