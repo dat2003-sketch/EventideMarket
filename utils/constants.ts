@@ -12,7 +12,6 @@ export const CONDITIONS = [
   { label: 'Like New', value: 'like_new' },
   { label: 'Good',     value: 'good' },
   { label: 'Fair',     value: 'fair' },
-  { label: 'Poor',     value: 'poor' },
 ] as const;
 export type ConditionValue = (typeof CONDITIONS)[number]['value'];
 

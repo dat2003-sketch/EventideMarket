@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import type { ConditionValue } from '../../utils/constants';
 
 const ACCENT = '#6a7ab2ff';
@@ -47,6 +47,7 @@ export default function HomeHeaderSimple({
         <Chip label="New" active={condition === 'new'} onPress={() => onSelectCondition('new')} />
         <Chip label="Like New" active={condition === 'like_new'} onPress={() => onSelectCondition('like_new')} />
         <Chip label="Good" active={condition === 'good'} onPress={() => onSelectCondition('good')} />
+        <Chip label="Fair" active={condition === 'fair'} onPress={() => onSelectCondition('fair')} />   
         <Chip
           label={sort === 'asc' ? 'Price ↑' : sort === 'desc' ? 'Price ↓' : 'Price ↑↓'}
           onPress={onToggleSort}
