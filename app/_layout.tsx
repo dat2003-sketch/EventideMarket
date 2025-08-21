@@ -1,5 +1,8 @@
-// import { Slot, useRouter, useSegments } from 'expo-router';
+
+
+
 // import React, { useEffect } from 'react';
+// import { Slot, useRouter, useSegments } from 'expo-router';
 // import { ActivityIndicator, View } from 'react-native';
 // import { AuthProvider, useAuth } from '../contexts/AuthContext';
 // import { FavoritesProvider } from '../contexts/FavoritesContext';
@@ -48,7 +51,6 @@
 //   );
 // }
 
-
 import { Slot, useRouter, useSegments } from 'expo-router';
 import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
@@ -57,7 +59,7 @@ import { FavoritesProvider } from '../contexts/FavoritesContext';
 
 function Gate() {
   const { user, loading } = useAuth();
-  const segments = useSegments();        // ['(auth)','login'] | ['(tabs)','index']
+  const segments = useSegments(); // ['(auth)','login'] | ['(tabs)','index']
   const router = useRouter();
 
   useEffect(() => {
@@ -65,14 +67,16 @@ function Gate() {
 
     const inAuth = segments[0] === '(auth)';
 
-    if (!user && !inAuth) {
-      // Chưa đăng nhập mà ở ngoài auth -> về login
-      router.replace('/(auth)/login');
+    // ❗ Chưa đăng nhập: nếu đang ở ngoài (auth) thì ép về splash (logo trước login)
+    if (!user) {
+      if (!inAuth) router.replace('/(auth)/splash');
       return;
     }
-    if (user && inAuth) {
-      // Đã đăng nhập mà còn ở auth -> vào tab home (index của group tabs)
+
+    // ✅ ĐÃ đăng nhập mà còn ở (auth) -> đưa ra group tabs (market)
+    if (inAuth) {
       router.replace('/(tabs)');
+      return;
     }
   }, [user, loading, segments]);
 
@@ -84,10 +88,8 @@ function Gate() {
     );
   }
 
-  // Hợp lệ thì render route hiện tại
   return <Slot />;
 }
-
 
 export default function RootLayout() {
   return (
