@@ -153,10 +153,10 @@
 
 // app/(tabs)/profile.tsx
 import React, { useEffect, useState } from 'react';
+import { Alert, Image, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, TextInput, Image, Alert } from 'react-native';
-import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/common/Button';
+import { useAuth } from '../../contexts/AuthContext';
 import { purchasesService, type PurchaseRow, type SaleRow } from '../../services/purchases';
 
 export default function Profile() {
@@ -223,6 +223,7 @@ export default function Profile() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+      <ScrollView>
       <View style={{ padding: 16, gap: 12 }}>
         <Text style={{ fontSize: 22, fontWeight: '800', marginBottom: 6 }}>Profile</Text>
 
@@ -241,7 +242,6 @@ export default function Profile() {
         <Button title={saving ? 'Saving…' : 'Save'} onPress={save} loading={saving} />
         <Button title="Sign out" onPress={signOut} variant="outline" />
 
-          
         {/* My orders */}
         <Text style={{ fontWeight: '700', marginTop: 16 }}>My orders</Text>
         {loadingOrders ? (
@@ -333,6 +333,7 @@ export default function Profile() {
           ))
         )}
       </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
