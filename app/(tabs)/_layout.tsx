@@ -37,7 +37,7 @@ export default function TabsLayout() {
       <Tabs.Screen
   name="favorites"
   options={{
-    title: 'Favorites',
+    title: 'Cart',
     tabBarIcon: ({ focused }) => (
       <Ionicons name={focused ? 'heart' : 'heart-outline'} size={22} />
     ),

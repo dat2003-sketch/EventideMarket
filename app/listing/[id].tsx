@@ -201,7 +201,7 @@ export default function ListingDetail() {
         <View style={{ gap: 12 }}>
           {/* Favorite full-width để không bị tràn */}
           <Button
-            title={fav ? 'Unfavorite' : 'Favorite'}
+            title={fav ? 'Item added' : 'Add to Cart'}
             onPress={toggleFav}
             variant={fav ? 'outline' : 'primary'}
             style={{ width: '100%' }}
