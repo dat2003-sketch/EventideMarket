@@ -39,7 +39,7 @@ export default function TabsLayout() {
   options={{
     title: 'Cart',
     tabBarIcon: ({ focused }) => (
-      <Ionicons name={focused ? 'heart' : 'heart-outline'} size={22} />
+      <Ionicons name={focused ? 'cart' : 'cart-outline'} size={22} />
     ),
   }}
 />

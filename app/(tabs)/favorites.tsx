@@ -170,13 +170,13 @@
 // app/(tabs)/favorites.tsx
 // app/(tabs)/favorites.tsx
 // app/(tabs)/favorites.tsx
-import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, FlatList, Image, Alert, Pressable } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { supabase } from '../../services/supabase';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Alert, FlatList, Image, Pressable, Text, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import { purchasesService } from '../../services/purchases';
+import { supabase } from '../../services/supabase';
 import { formatPrice } from '../../utils/formatting';
 
 type FavRow = {
@@ -297,7 +297,7 @@ export default function Favorites() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f8fafc' }}>
       <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Text style={{ fontSize: 18, fontWeight: '700' }}>Favorites</Text>
+        <Text style={{ fontSize: 18, fontWeight: '700' }}>Cart</Text>
         {selectMode ? (
           <Text onPress={() => { setSelectMode(false); setSelected({}); }} style={{ color: '#2563eb' }}>
             Cancel
