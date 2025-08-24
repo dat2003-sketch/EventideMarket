@@ -102,134 +102,147 @@
 // services/purchases.ts
 import { supabase } from './supabase';
 
-// Dòng type dùng chung cho "đơn đã mua" (của current user)
+/** Thông tin listing tối thiểu dùng khi hiển thị đơn */
+export type ListingLite = {
+  id: string;
+  title: string;
+  image_url: string | null;
+};
+
+/** Đơn mua (buyer xem “My orders”) */
 export type PurchaseRow = {
   id: string;
   listing_id: string;
+  buyer_id: string;
   price: number;
   created_at: string;
-  // thông tin listing có thể null nếu listing đã bị xóa
-  listing: {
-    id: string;
-    title: string;
-    image_url: string | null;
-  } | null;
+  listing: ListingLite | null; // có thể null nếu listing bị xoá
 };
 
-// Dòng type cho "customer's orders" (người khác mua hàng của mình)
+/** Đơn bán (seller xem “Customer’s orders”) */
 export type SaleRow = PurchaseRow & {
-  buyer_id: string;
-  buyer_name: string | null; // map từ bảng profiles
+  buyer_name: string; // tên người mua
 };
 
 export const purchasesService = {
-  // Đơn do current user đã mua
+  /**
+   * My orders – đơn mà current user đã mua
+   * YÊU CẦU: policy SELECT cho buyer_id trong Supabase (xem SQL phía dưới)
+   */
   async listMine(): Promise<PurchaseRow[]> {
-    const { data: u } = await supabase.auth.getUser();
-    const userId = u?.user?.id ?? '';
+    const { data: auth } = await supabase.auth.getUser();
+    const userId = auth?.user?.id;
     if (!userId) return [];
 
+    // ⚠️ Dùng alias constraint để tránh mơ hồ quan hệ
     const { data, error } = await supabase
       .from('purchases')
-      .select(`
-        id,
-        listing_id,
-        price,
-        created_at,
+      .select(
+        `
+        id, listing_id, buyer_id, price, created_at,
         listing:listings!purchases_listing_id_fkey (
           id, title, image_url
         )
-      `)
+      `
+      )
       .eq('buyer_id', userId)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('listMine error', error);
+      throw error;
+    }
 
-    // cast an toàn: unknown -> PurchaseRow[]
+    // ép kiểu an toàn
     return (data ?? []) as unknown as PurchaseRow[];
   },
 
-  // Các đơn hàng mà NGƯỜI KHÁC đã mua các listing của MÌNH
+  /**
+   * Customer’s orders – những đơn mà người khác mua CÁC listing do mình đăng
+   * Cách làm an toàn 2 bước:
+   * 1) Lấy tất cả listing_id thuộc về current user
+   * 2) Truy vấn purchases với listing_id nằm trong danh sách đó
+   * 3) Gắn buyer_name từ bảng profiles
+   */
   async listForSeller(): Promise<SaleRow[]> {
-    const { data: u } = await supabase.auth.getUser();
-    const userId = u?.user?.id ?? '';
+    const { data: auth } = await supabase.auth.getUser();
+    const userId = auth?.user?.id ?? '';
     if (!userId) return [];
 
-    // 1) lấy tất cả listing_id do mình đăng
-    const { data: myListings, error: lErr } = await supabase
+    // 1) Lấy list listing do mình đăng
+    const { data: listRows, error: listErr } = await supabase
       .from('listings')
       .select('id')
       .eq('user_id', userId);
+    if (listErr) throw listErr;
 
-    if (lErr) throw lErr;
+    const listingIds = (listRows ?? []).map((r: any) => r.id);
+    if (!listingIds.length) return []; // chưa đăng gì => chắc chắn chưa có ai mua
 
-    const ids = (myListings ?? []).map((r: any) => r.id);
-    if (!ids.length) return [];
-
-    // 2) lấy purchases của các listing đó
-    const { data, error: pErr } = await supabase
+    // 2) Lấy purchases của các listing đó
+    const { data: purchaseRows, error: purchaseErr } = await supabase
       .from('purchases')
-      .select(`
-        id,
-        listing_id,
-        price,
-        created_at,
-        buyer_id,
+      .select(
+        `
+        id, listing_id, buyer_id, price, created_at,
         listing:listings!purchases_listing_id_fkey (
           id, title, image_url
         )
-      `)
-      .in('listing_id', ids)
+      `
+      )
+      .in('listing_id', listingIds)
       .order('created_at', { ascending: false });
 
-    if (pErr) throw pErr;
+    if (purchaseErr) throw purchaseErr;
 
-    const base = (data ?? []) as unknown as Array<
-      Omit<SaleRow, 'buyer_name'>
-    >;
+    const arr = (purchaseRows ?? []) as unknown as PurchaseRow[];
 
-    if (!base.length) return base.map(r => ({ ...r, buyer_name: null }));
+    // 3) Lấy tên người mua theo buyer_id (gom mảng id để query một lần)
+    const buyerIds = Array.from(new Set(arr.map((r) => r.buyer_id))).filter(Boolean);
+    let buyerName = new Map<string, string>();
+    if (buyerIds.length) {
+      const { data: profs, error: profErr } = await supabase
+        .from('profiles')
+        .select('id, display_name')
+        .in('id', buyerIds);
+      if (profErr) throw profErr;
+      buyerName = new Map((profs ?? []).map((p: any) => [p.id, p.display_name || '—']));
+    }
 
-    // 3) map buyer_id -> display_name/email
-    const buyerIds = Array.from(new Set(base.map(r => r.buyer_id))).filter(Boolean);
-    const { data: profiles, error: profErr } = await supabase
-      .from('profiles')
-      .select('id, display_name, email')
-      .in('id', buyerIds);
-
-    if (profErr) throw profErr;
-
-    const nameMap = new Map<string, string>();
-    (profiles ?? []).forEach((p: any) =>
-      nameMap.set(p.id, p.display_name || p.email || '—')
-    );
-
-    return base.map(r => ({ ...r, buyer_name: nameMap.get(r.buyer_id) ?? null }));
+    return arr.map((r) => ({
+      ...r,
+      buyer_name: buyerName.get(r.buyer_id) ?? '—',
+    })) as SaleRow[];
   },
 
-  // Tạo nhiều purchase cho danh sách listing đã chọn (nút Buy)
+  /**
+   * Tạo nhiều purchases cho current user (khi bấm Buy các item trong Favorites)
+   * - Ghi nhận giá tại thời điểm mua (price snapshot)
+   */
   async createMany(listingIds: string[]): Promise<void> {
     if (!listingIds.length) return;
 
-    const { data: u } = await supabase.auth.getUser();
-    const user = u?.user;
-    if (!user) throw new Error('Not authenticated');
+    const { data: auth } = await supabase.auth.getUser();
+    const userId = auth?.user?.id;
+    if (!userId) throw new Error('Not authenticated');
 
-    // lấy giá của listing để chốt đơn
-    const { data: ls, error: lErr } = await supabase
+    // Lấy giá hiện tại của listing để snapshot
+    const { data: listRows, error: listErr } = await supabase
       .from('listings')
       .select('id, price')
       .in('id', listingIds);
+    if (listErr) throw listErr;
 
-    if (lErr) throw lErr;
+    const rows =
+      (listRows ?? []).map((r: any) => ({
+        buyer_id: userId,
+        listing_id: r.id,
+        price: Number(r.price) || 0,
+      })) ?? [];
 
-    const payload = (ls ?? []).map((r: any) => ({
-      buyer_id: user.id,
-      listing_id: r.id,
-      price: Number(r.price) || 0,
-    }));
+    if (!rows.length) return;
 
-    const { error } = await supabase.from('purchases').insert(payload);
-    if (error) throw error;
+    const { error: insertErr } = await supabase.from('purchases').insert(rows);
+    if (insertErr) throw insertErr;
   },
 };
