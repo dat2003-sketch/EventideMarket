@@ -1,9 +1,10 @@
-import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView, Alert } from 'react-native';
+import BackButton from '@/components/common/BackButton';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import React from 'react';
+import { Alert, ScrollView, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import ListingForm from '../../../components/listings/ListingForm';
-import { useListing } from '../../../hooks/useListings';   // ✅ đường dẫn đúng
+import { useListing } from '../../../hooks/useListings'; // ✅ đường dẫn đúng
 import { listingsService } from '../../../services/listings';
 import { globalStyles } from '../../../styles/globalStyles';
 
@@ -27,7 +28,11 @@ export default function EditListing() {
 
   return (
     <SafeAreaView style={globalStyles.safeContainer}>
-      <ScrollView contentContainerStyle={{ padding: 16 }}>
+      <View style={{  position: 'absolute' }}>
+        <BackButton /> 
+      </View>
+      
+      <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 52 }}>
         <ListingForm initialValues={listing} onSubmit={onSubmit} />
       </ScrollView>
     </SafeAreaView>
