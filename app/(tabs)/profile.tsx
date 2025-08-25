@@ -153,11 +153,12 @@
 
 // app/(tabs)/profile.tsx
 import React, { useEffect, useState } from 'react';
-import { Alert, Image, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '../../components/common/Button';
+import { View, Text, TextInput, Image, Alert, ScrollView } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
-import { purchasesService, type PurchaseRow, type SaleRow } from '../../services/purchases';
+import { Button } from '../../components/common/Button';
+import { purchasesService } from '../../services/purchases';
+import type { PurchaseRow, SaleRow } from '../../types/purchases';
 
 export default function Profile() {
   const { profile, updateProfile, signOut } = useAuth();
@@ -224,115 +225,127 @@ export default function Profile() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
       <ScrollView>
-      <View style={{ padding: 16, gap: 12 }}>
-        <Text style={{ fontSize: 22, fontWeight: '800', marginBottom: 6 }}>Profile</Text>
+        <View style={{ padding: 16, gap: 12 }}>
+          <Text style={{ fontSize: 22, fontWeight: '800', marginBottom: 6 }}>Profile</Text>
 
-        <Text style={{ fontWeight: '700' }}>Display name</Text>
-        <TextInput
-          style={{
-            borderWidth: 1,
-            borderColor: '#e5e7eb',
-            borderRadius: 12,
-            paddingHorizontal: 12,
-            height: 44,
-          }}
-          value={name}
-          onChangeText={setName}
-        />
-        <Button title={saving ? 'Saving…' : 'Save'} onPress={save} loading={saving} />
-        <Button title="Sign out" onPress={signOut} variant="outline" />
+          <Text style={{ fontWeight: '700' }}>Display name</Text>
+          <TextInput
+            style={{
+              borderWidth: 1,
+              borderColor: '#e5e7eb',
+              borderRadius: 12,
+              paddingHorizontal: 12,
+              height: 44,
+            }}
+            value={name}
+            onChangeText={setName}
+          />
+          <Button title={saving ? 'Saving…' : 'Save'} onPress={save} loading={saving} />
+          <Button title="Sign out" onPress={signOut} variant="outline" />
 
-        {/* My orders */}
-        <Text style={{ fontWeight: '700', marginTop: 16 }}>My orders</Text>
-        {loadingOrders ? (
-          <Text>Loading…</Text>
-        ) : orders.length === 0 ? (
-          <Text style={{ color: '#64748b' }}>No orders yet</Text>
-        ) : (
-          orders.map((o) => (
-            <View
-              key={o.id}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 12,
-                paddingVertical: 10,
-              }}
-            >
-              {o.listing?.image_url ? (
-                <Image
-                  source={{ uri: o.listing.image_url }}
-                  style={{ width: 56, height: 56, borderRadius: 8, backgroundColor: '#eee' }}
-                />
-              ) : (
-                <View
-                  style={{ width: 56, height: 56, borderRadius: 8, backgroundColor: '#eee' }}
-                />
-              )}
-              <View style={{ flex: 1 }}>
-                <Text numberOfLines={1} style={{ fontWeight: '600' }}>
-                  {o.listing?.title ?? '(Deleted listing)'}
-                </Text>
-                <Text style={{ color: '#64748b', marginTop: 2 }}>
-                  {new Date(o.created_at).toLocaleString()}
+          {/* My orders */}
+          <Text style={{ fontWeight: '700', marginTop: 16 }}>My orders</Text>
+          {loadingOrders ? (
+            <Text>Loading…</Text>
+          ) : orders.length === 0 ? (
+            <Text style={{ color: '#64748b' }}>No orders yet</Text>
+          ) : (
+            orders.map((o) => (
+              <View
+                key={o.id}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 12,
+                  paddingVertical: 10,
+                }}
+              >
+                {o.listing?.image_url ? (
+                  <Image
+                    source={{ uri: o.listing.image_url }}
+                    style={{ width: 56, height: 56, borderRadius: 8, backgroundColor: '#eee' }}
+                  />
+                ) : (
+                  <View
+                    style={{ width: 56, height: 56, borderRadius: 8, backgroundColor: '#eee' }}
+                  />
+                )}
+                <View style={{ flex: 1 }}>
+                  <Text numberOfLines={1} style={{ fontWeight: '600' }}>
+                    {o.listing?.title ?? '(Deleted listing)'}
+                  </Text>
+                  <Text style={{ color: '#64748b', marginTop: 2 }}>
+                    {new Date(o.created_at).toLocaleString()}
+                  </Text>
+                </View>
+                <Text style={{ color: '#16a34a', fontWeight: '700' }}>
+                  ${Number(o.price).toFixed(0)}
                 </Text>
               </View>
-              <Text style={{ color: '#16a34a', fontWeight: '700' }}>
-                ${Number(o.price).toFixed(0)}
+            ))
+          )}
+
+          {/* Customer's orders */}
+          <Text style={{ fontWeight: '700', marginTop: 18 }}>Customer&apos;s orders</Text>
+          {loadingSales ? (
+            <Text>Loading…</Text>
+          ) : sales.length === 0 ? (
+            <>
+              <Text style={{ color: '#64748b', marginTop: 4 }}>
+                Please create an item in the Sell tab, or no one has ordered your products yet.
               </Text>
-            </View>
-          ))
-        )}
+            </>
+          ) : (
+            sales.map((o) => (
+              <View
+                key={o.id}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 12,
+                  paddingVertical: 10,
+                }}
+              >
+                {o.listing?.image_url ? (
+                  <Image
+                    source={{ uri: o.listing.image_url }}
+                    style={{ width: 56, height: 56, borderRadius: 8, backgroundColor: '#eee' }}
+                  />
+                ) : (
+                  <View
+                    style={{ width: 56, height: 56, borderRadius: 8, backgroundColor: '#eee' }}
+                  />
+                )}
 
-        {/* Customer's orders */}
-        <Text style={{ fontWeight: '700', marginTop: 18 }}>Customer&apos;s orders</Text>
-        {loadingSales ? (
-          <Text>Loading…</Text>
-        ) : sales.length === 0 ? (
-          <>
-            <Text style={{ color: '#64748b', marginTop: 4 }}>
-              Please create an item in the Sell tab, or no one has ordered your products yet.
-            </Text>
-          </>
-        ) : (
-          sales.map((o) => (
-            <View
-              key={o.id}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 12,
-                paddingVertical: 10,
-              }}
-            >
-              {o.listing?.image_url ? (
-                <Image
-                  source={{ uri: o.listing.image_url }}
-                  style={{ width: 56, height: 56, borderRadius: 8, backgroundColor: '#eee' }}
-                />
-              ) : (
-                <View
-                  style={{ width: 56, height: 56, borderRadius: 8, backgroundColor: '#eee' }}
-                />
-              )}
+                <View style={{ flex: 1 }}>
+                  <Text numberOfLines={1} style={{ fontWeight: '600' }}>
+                    {o.listing?.title ?? '(Deleted listing)'}
+                  </Text>
+                  <Text style={{ color: '#64748b', marginTop: 2 }}>
+                    {new Date(o.created_at).toLocaleString()}
+                  </Text>
+                  {/* 👇 bổ sung thông tin người mua */}
+                  <Text style={{ color: '#64748b', marginTop: 2 }}>
+                    by {o.buyer_name || o.buyer_display_name}
+                  </Text>
+                  {!!o.buyer_phone && (
+                    <Text style={{ color: '#64748b' }}>Phone: {o.buyer_phone}</Text>
+                  )}
+                  {!!o.buyer_address && (
+                    <Text style={{ color: '#64748b' }}>Address: {o.buyer_address}</Text>
+                  )}
+                  {!!o.buyer_note && (
+                    <Text style={{ color: '#64748b' }}>Note: {o.buyer_note}</Text>
+                  )}
+                </View>
 
-              <View style={{ flex: 1 }}>
-                <Text numberOfLines={1} style={{ fontWeight: '600' }}>
-                  {o.listing?.title ?? '(Deleted listing)'}
+                <Text style={{ color: '#16a34a', fontWeight: '700' }}>
+                  +${Number(o.price).toFixed(0)}
                 </Text>
-                <Text style={{ color: '#64748b', marginTop: 2 }}>
-                  {new Date(o.created_at).toLocaleString()}
-                </Text>
-                <Text style={{ color: '#64748b', marginTop: 2 }}>by {o.buyer_name}</Text>
               </View>
-
-              <Text style={{ color: '#16a34a', fontWeight: '700' }}>
-                +${Number(o.price).toFixed(0)}
-              </Text>
-            </View>
-          ))
-        )}
-      </View>
+            ))
+          )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

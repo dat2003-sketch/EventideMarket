@@ -1,9 +1,10 @@
-
+// app/(tabs)/index.tsx
 import React, { useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useListings } from '../../hooks/useListings';
+import WeatherBadge from '../../components/common/WeatherBadge';
 import ListingGrid from '../../components/listings/ListingGrid';
 import HomeHeaderSimple from '../../components/market/HomeHeaderSimple';
+import { useListings } from '../../hooks/useListings';
 import type { ConditionValue } from '../../utils/constants';
 
 export default function Market() {
@@ -30,6 +31,8 @@ export default function Market() {
   }, [listings, query, condition, sort]);
 
   const header = (
+  <>
+    <WeatherBadge />
     <HomeHeaderSimple
       query={query}
       onChangeQuery={setQuery}
@@ -38,7 +41,8 @@ export default function Market() {
       sort={sort}
       onToggleSort={() => setSort((s) => (s === 'asc' ? 'desc' : s === 'desc' ? null : 'asc'))}
     />
-  );
+  </>
+);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
